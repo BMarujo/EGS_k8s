@@ -5,7 +5,6 @@ This directory deploys the full FlashSale microservice stack into the
 
 - Composer API gateway and React frontend
 - Auth API and static auth frontend
-- Payment Auth API
 - Inventory API
 - Payment API and wallet/checkout UI
 - Postgres and Redis for each data-owning service
@@ -48,11 +47,12 @@ Then open:
 - Grafana: http://grafana.flashsale (`admin` / `admin`)
 - Prometheus: http://prometheus.flashsale
 - Jaeger: http://jaeger.flashsale
+- Password-reset emails: http://mail.flashsale
 - Payment wallet UI: http://payment.flashsale/wallet/login
 
-For the checkout flow, the final payment authorization uses the separate
-Payment Auth service. In the browser this happens via the wallet UI on
-`payment.flashsale`, which calls `payment-auth.flashsale`.
+For the checkout flow, the payment wallet uses the same Auth service as the
+Composer app. The wallet pages on `payment.flashsale` call `auth.flashsale` and
+Payment validates those Bearer tokens through the internal `auth-service`.
 
 ## Smoke Test
 
@@ -63,7 +63,8 @@ k8s/scripts/smoke-test.sh 193.136.82.35
 The smoke test creates a promoter, creates/publishes an event, provisions a
 payment customer, authorizes a checkout, verifies `composer.flashsale/metrics`,
 checks Prometheus for `flashsale_payment_payments_total`, and verifies the
-provisioned Grafana dashboard.
+provisioned Grafana dashboard. It also calls forgot-password and verifies the
+reset email in MailHog.
 
 Useful direct checks:
 

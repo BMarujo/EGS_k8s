@@ -7,13 +7,13 @@ HOSTS=(
   grupo2-egs.deti.ua.pt
   composer.flashsale
   auth.flashsale
-  payment-auth.flashsale
   inventory.flashsale
   payment.flashsale
   grafana.flashsale
   jaeger.flashsale
   prometheus.flashsale
   vault.flashsale
+  mail.flashsale
 )
 
 tmp_file="$(mktemp)"

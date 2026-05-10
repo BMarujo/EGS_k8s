@@ -49,16 +49,6 @@ spec:
                 name: auth-service
                 port:
                   number: 8000
-    - host: payment-auth.flashsale
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: payment-auth-service
-                port:
-                  number: 8000
     - host: inventory.flashsale
       http:
         paths:
@@ -119,3 +109,13 @@ spec:
                 name: vault
                 port:
                   number: 8200
+    - host: mail.flashsale
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailhog
+                port:
+                  number: 8025
