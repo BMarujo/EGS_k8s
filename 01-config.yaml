@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: egs-config
+data:
+  PUBLIC_EDGE_HOST: grupo2-egs.deti.ua.pt
+  COMPOSER_PUBLIC_URL: http://composer.flashsale
+  AUTH_PUBLIC_URL: http://auth.flashsale
+  PAYMENT_AUTH_PUBLIC_URL: http://payment-auth.flashsale
+  INVENTORY_PUBLIC_URL: http://inventory.flashsale
+  PAYMENT_PUBLIC_URL: http://payment.flashsale
+
+  AUTH_SERVICE_URL: http://auth-service:8000
+  INVENTORY_SERVICE_URL: http://inventory-service:8000
+  PAYMENT_SERVICE_URL: http://payment-service:8000
+  PAYMENT_AUTH_SERVICE_URL: http://payment-auth-service:8000
+
+  COMPOSER_CORS_ORIGINS: http://composer.flashsale,http://auth.flashsale,http://payment-auth.flashsale,http://payment.flashsale,http://inventory.flashsale,http://grupo2-egs.deti.ua.pt
+  COMPOSER_BROWSER_RETURN_TO_ORIGINS: http://composer.flashsale,http://grupo2-egs.deti.ua.pt
+  EVENT_MUTATIONS_REQUIRE_ADMIN: "true"
+  EVENT_ADMIN_ROLES: admin,promoter
+  BROWSER_HANDOFF_TTL_SECONDS: "120"
+
+  AUTH_BACKEND_CORS_ORIGINS: http://composer.flashsale,http://auth.flashsale,http://payment.flashsale,http://grupo2-egs.deti.ua.pt
+  PAYMENT_AUTH_BACKEND_CORS_ORIGINS: http://composer.flashsale,http://payment.flashsale,http://payment-auth.flashsale,http://grupo2-egs.deti.ua.pt
+  AUTH_PASSWORD_RESET_LINK_PATH: /templates/reset_password.html
+  AUTH_REFRESH_COOKIE_NAME: egs_refresh_token
+  PAYMENT_AUTH_REFRESH_COOKIE_NAME: payment_refresh_token
+  AUTH_REFRESH_COOKIE_PATH: /
+  AUTH_REFRESH_COOKIE_SAMESITE: lax
+  AUTH_REFRESH_COOKIE_SECURE: "false"
+  AUTH_REFRESH_COOKIE_HTTPONLY: "true"
+
+  ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  REFRESH_TOKEN_EXPIRE_DAYS: "7"
+  ALGORITHM: HS256
+  DEBUG: "False"
+  ENVIRONMENT: development
+  LOG_LEVEL: INFO
+
+  EMAIL_ENABLED: "False"
+  EMAIL_FROM: noreply@egs.local
+  EMAIL_HOST: localhost
+  EMAIL_PORT: "1025"
+  EMAIL_USE_TLS: "False"
+  EMAIL_USE_SSL: "False"
+
+  INVENTORY_APP_NAME: Inventory Service
+  INVENTORY_APP_VERSION: 1.0.0
+  INVENTORY_DEBUG: "true"
+  INVENTORY_RATE_LIMIT_PER_MINUTE: "120"
+  RESERVATION_TTL_MINUTES: "15"
+
+  PAYMENT_APP_NAME: Payment Service
+  PAYMENT_APP_VERSION: 1.0.0
+  PAYMENT_DEBUG: "true"
+  PAYMENT_ENVIRONMENT: development
+  PAYMENT_RATE_LIMIT_REQUESTS: "100"
+  PAYMENT_RATE_LIMIT_WINDOW_SECONDS: "60"
+
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  OTEL_METRIC_EXPORT_INTERVAL_MS: "5000"
+  VAULT_ADDR: http://vault:8200

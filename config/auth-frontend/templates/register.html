@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EGS Auth - Register</title>
+  <link rel="stylesheet" href="../static/css/auth.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-card">
+      <h1>Create your EGS account</h1>
+      <p class="subtitle">Create your account and continue to the service that sent you here.</p>
+      
+      <p id="error-message" class="error" style="display: none;"></p>
+      <p id="success-message" class="success" style="display: none;"></p>
+      
+      <form id="register-form">
+        <label for="full_name">Full name</label>
+        <input id="full_name" name="full_name" type="text" required>
+
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required minlength="8">
+
+        <button type="submit">Create account</button>
+      </form>
+      <p class="small-link">
+        Already have an account?
+        <a href="login.html" id="login-link">Sign in</a>
+      </p>
+    </section>
+  </main>
+  <script>
+    const API_URL = "http://auth.flashsale/api/v1";
+
+    function withCurrentQuery(path) {
+      return window.location.search ? `${path}${window.location.search}` : path;
+    }
+
+    function extractErrorMessage(payload, fallback) {
+      if (!payload) {
+        return fallback;
+      }
+      if (typeof payload.detail === "string") {
+        return payload.detail;
+      }
+      if (Array.isArray(payload.detail)) {
+        const first = payload.detail[0];
+        if (typeof first === "string") {
+          return first;
+        }
+        if (first && first.msg) {
+          return first.msg;
+        }
+      }
+      if (payload.detail && typeof payload.detail === "object" && payload.detail.msg) {
+        return payload.detail.msg;
+      }
+      return fallback;
+    }
+
+    document.getElementById("login-link").href = withCurrentQuery("login.html");
+
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const fullName = document.getElementById("full_name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      
+      const errorMsg = document.getElementById("error-message");
+      const successMsg = document.getElementById("success-message");
+      const btn = e.target.querySelector("button");
+
+      errorMsg.style.display = "none";
+      successMsg.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Creating...";
+
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            full_name: fullName
+          })
+        });
+
+        let data = null;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = null;
+        }
+
+        if (!response.ok) {
+          throw new Error(extractErrorMessage(data, "Registration failed."));
+        }
+
+        successMsg.textContent = "Account created safely! Redirecting to login...";
+        successMsg.style.display = "block";
+
+        setTimeout(() => {
+          window.location.href = withCurrentQuery("login.html");
+        }, 2000);
+
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Create account";
+      }
+    });
+  </script>
+</body>
+</html>

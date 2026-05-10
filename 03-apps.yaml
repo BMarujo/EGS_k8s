@@ -1,0 +1,865 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: composer
+spec:
+  selector:
+    app: composer
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: composer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: composer
+  template:
+    metadata:
+      labels:
+        app: composer
+    spec:
+      containers:
+        - name: composer
+          image: egs-composer
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_SERVICE_URL
+            - name: INVENTORY_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: INVENTORY_SERVICE_URL
+            - name: PAYMENT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_SERVICE_URL
+            - name: PAYMENT_PUBLIC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_PUBLIC_URL
+            - name: COMPOSER_CORS_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: COMPOSER_CORS_ORIGINS
+            - name: COMPOSER_BROWSER_RETURN_TO_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: COMPOSER_BROWSER_RETURN_TO_ORIGINS
+            - name: BROWSER_HANDOFF_TTL_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: BROWSER_HANDOFF_TTL_SECONDS
+            - name: INVENTORY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INVENTORY_API_KEY
+            - name: PAYMENT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: PAYMENT_API_KEY
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INTERNAL_SERVICE_KEY
+            - name: EVENT_MUTATIONS_REQUIRE_ADMIN
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EVENT_MUTATIONS_REQUIRE_ADMIN
+            - name: EVENT_ADMIN_ROLES
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EVENT_ADMIN_ROLES
+            - name: VAULT_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: VAULT_ADDR
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: VAULT_TOKEN
+            - name: OTEL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_ENABLED
+            - name: OTEL_SERVICE_NAME
+              value: composer
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_METRIC_EXPORT_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_METRIC_EXPORT_INTERVAL_MS
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: egs-auth-service
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: AUTH_DATABASE_URL
+            - name: REDIS_URL
+              value: redis://auth-redis:6379/0
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: AUTH_SECRET_KEY
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INTERNAL_SERVICE_KEY
+            - name: BACKEND_CORS_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_BACKEND_CORS_ORIGINS
+            - name: SERVICE_PUBLIC_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_PUBLIC_URL
+            - name: PASSWORD_RESET_LINK_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_PASSWORD_RESET_LINK_PATH
+            - name: AUTH_REFRESH_COOKIE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_NAME
+            - name: AUTH_REFRESH_COOKIE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_PATH
+            - name: AUTH_REFRESH_COOKIE_SAMESITE
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_SAMESITE
+            - name: AUTH_REFRESH_COOKIE_SECURE
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_SECURE
+            - name: AUTH_REFRESH_COOKIE_HTTPONLY
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_HTTPONLY
+            - name: ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: ALGORITHM
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: ACCESS_TOKEN_EXPIRE_MINUTES
+            - name: REFRESH_TOKEN_EXPIRE_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: REFRESH_TOKEN_EXPIRE_DAYS
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: DEBUG
+            - name: EMAIL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EMAIL_ENABLED
+            - name: EMAIL_FROM
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EMAIL_FROM
+            - name: EMAIL_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EMAIL_HOST
+            - name: EMAIL_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EMAIL_PORT
+            - name: EMAIL_USE_TLS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EMAIL_USE_TLS
+            - name: EMAIL_USE_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: EMAIL_USE_SSL
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: ENVIRONMENT
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: LOG_LEVEL
+            - name: VAULT_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: VAULT_ADDR
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: VAULT_TOKEN
+            - name: OTEL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_ENABLED
+            - name: OTEL_SERVICE_NAME
+              value: auth-service
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_METRIC_EXPORT_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_METRIC_EXPORT_INTERVAL_MS
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-frontend
+spec:
+  selector:
+    app: auth-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-frontend
+  template:
+    metadata:
+      labels:
+        app: auth-frontend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /templates/login.html
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /templates/login.html
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 20m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: auth-templates
+              mountPath: /usr/share/nginx/html/templates
+              readOnly: true
+            - name: auth-css
+              mountPath: /usr/share/nginx/html/static/css
+              readOnly: true
+      volumes:
+        - name: auth-templates
+          configMap:
+            name: auth-frontend-templates
+        - name: auth-css
+          configMap:
+            name: auth-frontend-static-css
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-auth-service
+spec:
+  selector:
+    app: payment-auth-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-auth-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-auth-service
+  template:
+    metadata:
+      labels:
+        app: payment-auth-service
+    spec:
+      containers:
+        - name: payment-auth-service
+          image: egs-auth-service
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: PAYMENT_AUTH_DATABASE_URL
+            - name: REDIS_URL
+              value: redis://payment-auth-redis:6379/0
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: PAYMENT_AUTH_SECRET_KEY
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INTERNAL_SERVICE_KEY
+            - name: BACKEND_CORS_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_AUTH_BACKEND_CORS_ORIGINS
+            - name: SERVICE_PUBLIC_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_AUTH_PUBLIC_URL
+            - name: PASSWORD_RESET_LINK_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_PASSWORD_RESET_LINK_PATH
+            - name: AUTH_REFRESH_COOKIE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_AUTH_REFRESH_COOKIE_NAME
+            - name: AUTH_REFRESH_COOKIE_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_PATH
+            - name: AUTH_REFRESH_COOKIE_SAMESITE
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_SAMESITE
+            - name: AUTH_REFRESH_COOKIE_SECURE
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_SECURE
+            - name: AUTH_REFRESH_COOKIE_HTTPONLY
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: AUTH_REFRESH_COOKIE_HTTPONLY
+            - name: SERVICE_NAME
+              value: payment-auth-service
+            - name: ALGORITHM
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: ALGORITHM
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: ACCESS_TOKEN_EXPIRE_MINUTES
+            - name: REFRESH_TOKEN_EXPIRE_DAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: REFRESH_TOKEN_EXPIRE_DAYS
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: DEBUG
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: ENVIRONMENT
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: LOG_LEVEL
+            - name: VAULT_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: VAULT_ADDR
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: VAULT_TOKEN
+            - name: OTEL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_ENABLED
+            - name: OTEL_SERVICE_NAME
+              value: payment-auth-service
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_METRIC_EXPORT_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_METRIC_EXPORT_INTERVAL_MS
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+        - name: inventory-service
+          image: egs-inventory-service
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: INVENTORY_APP_NAME
+            - name: APP_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: INVENTORY_APP_VERSION
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: INVENTORY_DEBUG
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INVENTORY_DATABASE_URL
+            - name: REDIS_URL
+              value: redis://inv-redis:6379/0
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INVENTORY_API_KEY
+            - name: RATE_LIMIT_PER_MINUTE
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: INVENTORY_RATE_LIMIT_PER_MINUTE
+            - name: RESERVATION_TTL_MINUTES
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: RESERVATION_TTL_MINUTES
+            - name: VAULT_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: VAULT_ADDR
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: VAULT_TOKEN
+            - name: OTEL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_ENABLED
+            - name: OTEL_SERVICE_NAME
+              value: inventory-service
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_METRIC_EXPORT_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_METRIC_EXPORT_INTERVAL_MS
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+        - name: payment-service
+          image: egs-payment-service
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: APP_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_APP_NAME
+            - name: APP_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_APP_VERSION
+            - name: DEBUG
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_DEBUG
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_ENVIRONMENT
+            - name: ADMIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: PAYMENT_ADMIN_API_KEY
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: PAYMENT_DATABASE_URL
+            - name: REDIS_URL
+              value: redis://pay-redis:6379/0
+            - name: AUTH_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_AUTH_SERVICE_URL
+            - name: INTERNAL_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: INTERNAL_SERVICE_KEY
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: STRIPE_SECRET_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: STRIPE_WEBHOOK_SECRET
+            - name: RATE_LIMIT_REQUESTS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_RATE_LIMIT_REQUESTS
+            - name: RATE_LIMIT_WINDOW_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: PAYMENT_RATE_LIMIT_WINDOW_SECONDS
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: LOG_LEVEL
+            - name: VAULT_ADDR
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: VAULT_ADDR
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: egs-secrets
+                  key: VAULT_TOKEN
+            - name: OTEL_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_ENABLED
+            - name: OTEL_SERVICE_NAME
+              value: payment-service
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_EXPORTER_OTLP_ENDPOINT
+            - name: OTEL_METRIC_EXPORT_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: egs-config
+                  key: OTEL_METRIC_EXPORT_INTERVAL_MS
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 40
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 750m
+              memory: 768Mi

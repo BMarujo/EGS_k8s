@@ -1,0 +1,58 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: tenant-grupo2-egs-deti-ua-pt
+
+resources:
+  - 00-secrets.yaml
+  - 01-config.yaml
+  - 02-data.yaml
+  - 03-apps.yaml
+  - 04-observability.yaml
+  - 05-ingress.yaml
+
+images:
+  - name: egs-composer
+    newName: bmarujo/egs-composer
+    newTag: k8s-20260510204115
+  - name: egs-auth-service
+    newName: bmarujo/egs-auth-service
+    newTag: k8s-20260510204115
+  - name: egs-inventory-service
+    newName: bmarujo/egs-inventory-service
+    newTag: k8s-20260510204115
+  - name: egs-payment-service
+    newName: bmarujo/egs-payment-service
+    newTag: k8s-20260510204115
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: auth-frontend-templates
+    files:
+      - login.html=config/auth-frontend/templates/login.html
+      - register.html=config/auth-frontend/templates/register.html
+      - forgot_password.html=config/auth-frontend/templates/forgot_password.html
+      - reset_password.html=config/auth-frontend/templates/reset_password.html
+  - name: auth-frontend-static-css
+    files:
+      - auth.css=config/auth-frontend/static/css/auth.css
+  - name: otel-collector-config
+    files:
+      - config.yaml=config/observability/otel-collector-config.yaml
+  - name: prometheus-config
+    files:
+      - prometheus.yml=config/observability/prometheus.yml
+  - name: grafana-datasources
+    files:
+      - datasources.yaml=config/observability/grafana/provisioning/datasources/datasources.yaml
+  - name: grafana-dashboard-provider
+    files:
+      - dashboards.yaml=config/observability/grafana/provisioning/dashboards/dashboards.yaml
+  - name: grafana-dashboards
+    files:
+      - flashsale-kpis.json=config/observability/grafana/dashboards/flashsale-kpis.json
+  - name: vault-init-script
+    files:
+      - init.sh=config/vault/init.sh

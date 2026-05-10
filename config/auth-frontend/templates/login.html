@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EGS Auth - Login</title>
+  <link rel="stylesheet" href="../static/css/auth.css">
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="auth-card">
+      <h1>Sign in to EGS</h1>
+      <p class="subtitle">Use your account to continue to the requested service.</p>
+      
+      <p id="error-message" class="error" style="display: none;"></p>
+      <p id="success-message" class="success" style="display: none;"></p>
+      
+      <form id="login-form">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required minlength="8">
+
+        <button type="submit">Sign In</button>
+      </form>
+      <p class="small-link">
+        <a href="forgot_password.html" id="forgot-link">Forgot your password?</a>
+      </p>
+      <p class="small-link">
+        New here?
+        <a href="register.html" id="register-link">Create account</a>
+      </p>
+    </section>
+  </main>
+  <script>
+    const API_URL = "http://auth.flashsale/api/v1";
+    const urlParams = new URLSearchParams(window.location.search);
+    const handoffUrl = urlParams.get("handoff_url");
+    const returnTo = urlParams.get("return_to");
+    const handoffState = urlParams.get("state");
+    const fallbackRedirect = returnTo || "/";
+
+    function withCurrentQuery(path) {
+      return window.location.search ? `${path}${window.location.search}` : path;
+    }
+
+    function extractErrorMessage(payload, fallback) {
+      if (!payload) {
+        return fallback;
+      }
+      if (typeof payload.detail === "string") {
+        return payload.detail;
+      }
+      if (Array.isArray(payload.detail)) {
+        const first = payload.detail[0];
+        if (typeof first === "string") {
+          return first;
+        }
+        if (first && first.msg) {
+          return first.msg;
+        }
+      }
+      return fallback;
+    }
+
+    async function createBrowserHandoff(tokens) {
+      if (!handoffUrl || !returnTo || !handoffState) {
+        return null;
+      }
+
+      const response = await fetch(handoffUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          return_to: returnTo,
+          state: handoffState
+        })
+      });
+
+      let data = null;
+      try {
+        data = await response.json();
+      } catch (_) {
+        data = null;
+      }
+
+      if (!response.ok || !data?.redirect_to) {
+        throw new Error(extractErrorMessage(data, "Could not return to the requested service."));
+      }
+
+      return data.redirect_to;
+    }
+
+    document.getElementById("forgot-link").href = withCurrentQuery("forgot_password.html");
+    document.getElementById("register-link").href = withCurrentQuery("register.html");
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const errorMsg = document.getElementById("error-message");
+      const successMsg = document.getElementById("success-message");
+      const btn = e.target.querySelector("button");
+      
+      errorMsg.style.display = "none";
+      successMsg.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "Signing In...";
+
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email,
+            password
+          })
+        });
+
+        let data = null;
+        try {
+          data = await response.json();
+        } catch (_) {
+          data = null;
+        }
+
+        if (!response.ok) {
+          throw new Error(extractErrorMessage(data, "Invalid login credentials."));
+        }
+
+        const redirectTo = await createBrowserHandoff(data);
+        successMsg.textContent = redirectTo ? "Login successful! Returning to your service..." : "Login successful!";
+        successMsg.style.display = "block";
+        
+        setTimeout(() => {
+          if (redirectTo) {
+            window.location.href = redirectTo;
+            return;
+          }
+          window.location.href = fallbackRedirect;
+        }, 1000);
+
+      } catch (err) {
+        errorMsg.textContent = err.message;
+        errorMsg.style.display = "block";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Sign In";
+      }
+    });
+  </script>
+</body>
+</html>
