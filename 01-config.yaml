@@ -6,22 +6,26 @@ data:
   PUBLIC_EDGE_HOST: grupo2-egs.deti.ua.pt
   COMPOSER_PUBLIC_URL: http://composer.flashsale
   AUTH_PUBLIC_URL: http://auth.flashsale
+  PAYMENT_AUTH_PUBLIC_URL: http://payment-auth.flashsale
   INVENTORY_PUBLIC_URL: http://inventory.flashsale
   PAYMENT_PUBLIC_URL: http://payment.flashsale
 
   AUTH_SERVICE_URL: http://auth-service:8000
+  PAYMENT_AUTH_SERVICE_URL: http://payment-auth-service:8000
   INVENTORY_SERVICE_URL: http://inventory-service:8000
   PAYMENT_SERVICE_URL: http://payment-service:8000
 
-  COMPOSER_CORS_ORIGINS: http://composer.flashsale,http://auth.flashsale,http://payment.flashsale,http://inventory.flashsale,http://grupo2-egs.deti.ua.pt
+  COMPOSER_CORS_ORIGINS: http://composer.flashsale,http://auth.flashsale,http://payment-auth.flashsale,http://payment.flashsale,http://inventory.flashsale,http://grupo2-egs.deti.ua.pt
   COMPOSER_BROWSER_RETURN_TO_ORIGINS: http://composer.flashsale,http://grupo2-egs.deti.ua.pt
   EVENT_MUTATIONS_REQUIRE_ADMIN: "true"
   EVENT_ADMIN_ROLES: admin,promoter
   BROWSER_HANDOFF_TTL_SECONDS: "120"
 
   AUTH_BACKEND_CORS_ORIGINS: http://composer.flashsale,http://auth.flashsale,http://payment.flashsale,http://grupo2-egs.deti.ua.pt
+  PAYMENT_AUTH_BACKEND_CORS_ORIGINS: http://composer.flashsale,http://payment.flashsale,http://payment-auth.flashsale,http://grupo2-egs.deti.ua.pt
   AUTH_PASSWORD_RESET_LINK_PATH: /templates/reset_password.html
   AUTH_REFRESH_COOKIE_NAME: egs_refresh_token
+  PAYMENT_AUTH_REFRESH_COOKIE_NAME: payment_refresh_token
   AUTH_REFRESH_COOKIE_PATH: /
   AUTH_REFRESH_COOKIE_SAMESITE: lax
   AUTH_REFRESH_COOKIE_SECURE: "false"

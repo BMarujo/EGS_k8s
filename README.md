@@ -33,19 +33,23 @@ All manifests are applied to:
 namespace: tenant-grupo2-egs-deti-ua-pt
 ```
 
-### One Shared Auth Service
+### Separate Auth Instances For Composer And Payment
 
-Only one Auth service is deployed:
+Two Auth service instances are deployed from the same Auth image:
 
 - `auth-service`
 - `auth-postgres`
 - `auth-redis`
 - `auth-frontend`
+- `payment-auth-service`
+- `payment-auth-postgres`
+- `payment-auth-redis`
 
-Originally there was a separate `payment-auth-service`, but it created two user
-databases and two token issuers. That caused user/token drift between the main
-Composer app and Payment wallet. Payment now validates Bearer tokens against the
-same internal `auth-service` used by Composer.
+Composer uses `auth-service`. Payment uses its own `payment-auth-service`.
+This keeps the Payment wallet identity store and token issuer separate from the
+main Composer identity store, while still reusing the same Auth application
+code. The two instances use different Postgres/Redis state and different token
+secret keys.
 
 ### Private Services, Public Ingress
 
@@ -98,7 +102,7 @@ Object:
 
 This stores values that should not live in a normal ConfigMap:
 
-- JWT signing key for Auth
+- JWT signing keys for Composer Auth and Payment Auth
 - internal service key shared by trusted services
 - Inventory API key
 - Payment admin/API key
@@ -126,6 +130,7 @@ This stores non-secret configuration:
 
 - public URLs, such as `http://composer.flashsale`
 - internal service URLs, such as `http://auth-service:8000`
+- Payment Auth internal URL, `http://payment-auth-service:8000`
 - CORS origins
 - Auth cookie settings
 - password reset email settings
@@ -148,6 +153,13 @@ Auth data:
 - `Service/auth-postgres`
 - `StatefulSet/auth-redis`
 - `Service/auth-redis`
+
+Payment Auth data:
+
+- `StatefulSet/payment-auth-postgres`
+- `Service/payment-auth-postgres`
+- `StatefulSet/payment-auth-redis`
+- `Service/payment-auth-redis`
 
 Inventory data:
 
@@ -210,9 +222,19 @@ Auth:
 - `Deployment/auth-frontend`
 - `Service/auth-frontend`
 
-`auth-service` is the single identity provider for the platform. Composer and
-Payment both use it. `auth-frontend` is an Nginx container that serves static
-login/register/forgot/reset password pages.
+`auth-service` is the Composer identity provider. `auth-frontend` is an Nginx
+container that serves the static Composer auth pages for login, registration,
+forgot password, and reset password.
+
+Payment Auth:
+
+- `Deployment/payment-auth-service`
+- `Service/payment-auth-service`
+
+`payment-auth-service` is a second instance of the same Auth application, but it
+uses `payment-auth-postgres`, `payment-auth-redis`, `PAYMENT_AUTH_SECRET_KEY`,
+and the public host `payment-auth.flashsale`. Payment wallet login/register
+pages call this service directly.
 
 Inventory:
 
@@ -231,10 +253,8 @@ Payment owns customers, checkout sessions, payments, refunds, receipts, and the
 wallet/checkout UI. It validates user Bearer tokens by calling:
 
 ```text
-http://auth-service:8000/api/v1/auth/verify
+http://payment-auth-service:8000/api/v1/auth/verify
 ```
-
-No separate Payment Auth service is deployed.
 
 All application deployments use:
 
@@ -342,6 +362,7 @@ vault server -dev
 The `vault-init` Job writes dev secrets into paths such as:
 
 - `secret/auth`
+- `secret/payment-auth`
 - `secret/inventory`
 - `secret/payment`
 - `secret/composer`
@@ -411,6 +432,7 @@ Ingress hosts:
 | `composer.flashsale` | `composer:8000` | Main app and Composer API |
 | `grupo2-egs.deti.ua.pt` | `composer:8000` | Public cluster DNS entry |
 | `auth.flashsale` | `auth-service:8000` and `auth-frontend:80` | Auth API and static Auth pages |
+| `payment-auth.flashsale` | `payment-auth-service:8000` | Payment wallet Auth API |
 | `inventory.flashsale` | `inventory-service:8000` | Inventory API |
 | `payment.flashsale` | `payment-service:8000` | Payment API, wallet, checkout UI |
 | `grafana.flashsale` | `grafana:3000` | Grafana UI |
@@ -443,6 +465,7 @@ This maps:
 - `grupo2-egs.deti.ua.pt`
 - `composer.flashsale`
 - `auth.flashsale`
+- `payment-auth.flashsale`
 - `inventory.flashsale`
 - `payment.flashsale`
 - `grafana.flashsale`
@@ -473,6 +496,12 @@ Payment wallet:
 
 ```text
 http://payment.flashsale/wallet/login
+```
+
+Payment Auth API:
+
+```text
+http://payment-auth.flashsale
 ```
 
 Grafana:
@@ -530,9 +559,12 @@ Wait for core workloads:
 ```bash
 kubectl rollout status deploy/composer
 kubectl rollout status deploy/auth-service
+kubectl rollout status deploy/payment-auth-service
 kubectl rollout status deploy/inventory-service
 kubectl rollout status deploy/payment-service
 kubectl rollout status deploy/mailhog
+kubectl rollout status statefulset/payment-auth-postgres
+kubectl rollout status statefulset/payment-auth-redis
 kubectl rollout status statefulset/prometheus
 kubectl rollout status statefulset/grafana
 ```
@@ -554,7 +586,8 @@ k8s/scripts/smoke-test.sh 193.136.82.35
 The smoke test verifies:
 
 - Composer health
-- registering and logging in through the single Auth service
+- registering and logging in through the Composer Auth service
+- registering and logging in through Payment Auth for hosted checkout
 - forgot-password email delivery into MailHog
 - KPI dashboard JSON
 - event and ticket creation through Composer -> Inventory
@@ -588,15 +621,15 @@ pod restart. Common examples:
 kubectl rollout restart statefulset/prometheus
 kubectl rollout restart statefulset/grafana
 kubectl rollout restart deploy/auth-service
+kubectl rollout restart deploy/payment-auth-service
 kubectl rollout restart deploy/composer
 ```
 
-### Old Payment Auth PVCs
+### Payment Auth PVCs
 
-The old duplicate Payment Auth deployment was removed so the platform uses one
-Auth service. If the cluster still has `data-payment-auth-*` PVCs, they are
-leftover inactive storage and are not mounted by the current manifests. They can
-be deleted manually only after confirming that old data is no longer needed.
+`payment-auth-postgres` and `payment-auth-redis` use their own Longhorn PVCs.
+Those volumes are intentionally separate from the Composer Auth volumes, because
+Payment Auth owns its own users, sessions, and token state.
 
 ### Security Caveats
 

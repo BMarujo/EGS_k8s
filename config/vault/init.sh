@@ -25,6 +25,15 @@ vault kv put secret/auth \
 
 echo "✅ Auth secrets written"
 
+# ── Payment Auth Service secrets ──────────────────────────────
+vault kv put secret/payment-auth \
+  database_url="postgresql://user:password@payment-auth-postgres:5432/auth_db" \
+  redis_url="redis://payment-auth-redis:6379/0" \
+  secret_key="super-secret-jwt-key-for-dev-payment-2024" \
+  internal_service_key="${INTERNAL_SERVICE_KEY:-internal-dev-key-2024}"
+
+echo "✅ Payment Auth secrets written"
+
 # ── Inventory Service secrets ─────────────────────────────────
 vault kv put secret/inventory \
   database_url="postgresql+asyncpg://inventory_user:inventory_pass@inv-postgres:5432/inventory_db_fresh" \

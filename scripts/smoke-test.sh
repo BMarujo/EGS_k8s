@@ -8,6 +8,7 @@ PAYMENT_BASE="http://payment.flashsale"
 curl_resolve=(
   --resolve "composer.flashsale:80:${EDGE_IP}"
   --resolve "auth.flashsale:80:${EDGE_IP}"
+  --resolve "payment-auth.flashsale:80:${EDGE_IP}"
   --resolve "inventory.flashsale:80:${EDGE_IP}"
   --resolve "payment.flashsale:80:${EDGE_IP}"
   --resolve "grafana.flashsale:80:${EDGE_IP}"
@@ -94,8 +95,16 @@ test -n "$SESSION_ID"
 echo "checkout_url=${CHECKOUT_URL}"
 
 echo "7. Authorize hosted checkout directly on Payment"
+curl -fsS "${curl_resolve[@]}" -X POST "http://payment-auth.flashsale/api/v1/auth/register" \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"full_name\":\"K8s Smoke\"}" >/dev/null || true
+PAYMENT_LOGIN_JSON="$(curl -fsS "${curl_resolve[@]}" -X POST "http://payment-auth.flashsale/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\"}")"
+PAYMENT_TOKEN="$(printf "%s" "$PAYMENT_LOGIN_JSON" | json_get access_token)"
+test -n "$PAYMENT_TOKEN"
 curl -fsS "${curl_resolve[@]}" -X POST "${PAYMENT_BASE}/api/v1/checkout/${SESSION_ID}/authorize" \
-  -H "Authorization: Bearer ${TOKEN}" | python3 -m json.tool
+  -H "Authorization: Bearer ${PAYMENT_TOKEN}" | python3 -m json.tool
 
 echo "8. Composer metrics and Prometheus/Grafana KPI checks"
 curl -fsS "${curl_resolve[@]}" "${BASE}/metrics" >/tmp/egs-metrics.prom

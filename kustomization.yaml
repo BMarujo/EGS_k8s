@@ -14,16 +14,16 @@ resources:
 images:
   - name: egs-composer
     newName: bmarujo/egs-composer
-    newTag: k8s-20260510215836
+    newTag: k8s-20260513123600
   - name: egs-auth-service
     newName: bmarujo/egs-auth-service
-    newTag: k8s-20260510215836
+    newTag: k8s-20260513123600
   - name: egs-inventory-service
     newName: bmarujo/egs-inventory-service
-    newTag: k8s-20260510215836
+    newTag: k8s-20260513123600
   - name: egs-payment-service
     newName: bmarujo/egs-payment-service
-    newTag: k8s-20260510215836
+    newTag: k8s-20260513123600
 
 generatorOptions:
   disableNameSuffixHash: true
