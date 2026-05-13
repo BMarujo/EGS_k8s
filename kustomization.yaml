@@ -14,7 +14,7 @@ resources:
 images:
   - name: egs-composer
     newName: bmarujo/egs-composer
-    newTag: k8s-20260513123600
+    newTag: k8s-20260513155149
   - name: egs-auth-service
     newName: bmarujo/egs-auth-service
     newTag: k8s-20260513123600

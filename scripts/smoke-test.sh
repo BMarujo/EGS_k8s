@@ -111,9 +111,10 @@ curl -fsS "${curl_resolve[@]}" "${BASE}/metrics" >/tmp/egs-metrics.prom
 grep -q "flashsale_auth_users_total" /tmp/egs-metrics.prom
 grep -q "flashsale_inventory_tickets_total" /tmp/egs-metrics.prom
 grep -q "flashsale_payment_payments_total" /tmp/egs-metrics.prom
+grep -q "flashsale_composer_api_calls_total" /tmp/egs-metrics.prom
 sleep 8
 curl -fsS "${curl_resolve[@]}" --get "http://prometheus.flashsale/api/v1/query" \
-  --data-urlencode 'query=flashsale_payment_payments_total' >/tmp/egs-prometheus-query.json
+  --data-urlencode 'query=sum by (service, method, path, status_class) (flashsale_composer_api_calls_total)' >/tmp/egs-prometheus-query.json
 python3 - <<'PY'
 import json
 data = json.load(open("/tmp/egs-prometheus-query.json"))

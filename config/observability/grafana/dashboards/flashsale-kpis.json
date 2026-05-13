@@ -808,7 +808,8 @@
       },
       "fieldConfig": {
         "defaults": {
-          "decimals": 0
+          "decimals": 0,
+          "unit": "short"
         },
         "overrides": []
       },
@@ -820,15 +821,16 @@
       },
       "id": 15,
       "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "bottom",
-          "showLegend": true
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
         },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
+        "showHeader": true
       },
       "pluginVersion": "11.4.0",
       "targets": [
@@ -838,15 +840,41 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "flashsale_composer_recent_api_calls_by_status",
-          "instant": false,
-          "legendFormat": "{{service}} {{status_class}}",
-          "range": true,
+          "expr": "sum by (service, method, path, status_class) (flashsale_composer_api_calls_total)",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "__auto",
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Recent Composer Calls",
-      "type": "timeseries"
+      "title": "API Calls Total",
+      "type": "table",
+      "description": "Cumulative Composer proxy calls since the current Composer pod started, grouped by service, HTTP method, endpoint path, and status class.",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "service": 0,
+              "method": 1,
+              "path": 2,
+              "status_class": 3,
+              "Value": 4
+            },
+            "renameByName": {
+              "service": "Service",
+              "method": "Method",
+              "path": "Endpoint",
+              "status_class": "Status",
+              "Value": "Calls"
+            }
+          }
+        }
+      ]
     }
   ],
   "refresh": "5s",
