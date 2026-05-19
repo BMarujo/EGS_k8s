@@ -22,6 +22,15 @@ json_get() {
   python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('$key',''))" 2>/dev/null
 }
 
+count_event_tickets() {
+  local event_id="$1"
+  local status="$2"
+  curl -fsS "${curl_resolve[@]}" --get "${BASE}/api/events/${event_id}/tickets" \
+    --data-urlencode "status=${status}" \
+    --data-urlencode "limit=100" \
+    | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("total", len(d.get("data", []))))'
+}
+
 echo "1. Composer health"
 curl -fsS "${curl_resolve[@]}" "${BASE}/health" | python3 -m json.tool
 
@@ -74,11 +83,17 @@ test -n "$EVENT_ID"
 curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/api/events/${EVENT_ID}/tickets" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${TOKEN}" \
-  -d '{"category":"General Admission","price":25.00,"currency":"EUR","quantity":3}' >/dev/null
+  -d '{"category":"General Admission","price":25.00,"currency":"EUR","quantity":6}' >/dev/null
 curl -fsS "${curl_resolve[@]}" -X PUT "${BASE}/api/events/${EVENT_ID}" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${TOKEN}" \
   -d '{"status":"published"}' >/dev/null
+AVAILABLE_BEFORE="$(count_event_tickets "${EVENT_ID}" available)"
+RESERVED_BEFORE="$(count_event_tickets "${EVENT_ID}" reserved)"
+SOLD_BEFORE="$(count_event_tickets "${EVENT_ID}" sold)"
+test "${AVAILABLE_BEFORE}" = "6"
+test "${RESERVED_BEFORE}" = "0"
+test "${SOLD_BEFORE}" = "0"
 
 echo "6. Payment account and checkout through Composer -> Payment"
 curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/api/payment-account/setup" \
@@ -88,11 +103,19 @@ curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/api/payment-account/setup" \
 CHECKOUT_JSON="$(curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/api/checkout" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer ${TOKEN}" \
-  -d "{\"event_id\":\"${EVENT_ID}\",\"quantity\":1,\"success_url\":\"${BASE}/?status=success\",\"cancel_url\":\"${BASE}/?status=cancel\",\"amount_cents\":1500}")"
+  -d "{\"event_id\":\"${EVENT_ID}\",\"quantity\":3,\"success_url\":\"${BASE}/?status=success\",\"cancel_url\":\"${BASE}/?status=cancel\",\"amount_cents\":7500}")"
 SESSION_ID="$(printf "%s" "$CHECKOUT_JSON" | json_get session_id)"
 CHECKOUT_URL="$(printf "%s" "$CHECKOUT_JSON" | json_get checkout_url)"
+TICKET_COUNT="$(printf "%s" "$CHECKOUT_JSON" | json_get ticket_count)"
 test -n "$SESSION_ID"
+test "${TICKET_COUNT}" = "3"
 echo "checkout_url=${CHECKOUT_URL}"
+AVAILABLE_RESERVED="$(count_event_tickets "${EVENT_ID}" available)"
+RESERVED_RESERVED="$(count_event_tickets "${EVENT_ID}" reserved)"
+SOLD_RESERVED="$(count_event_tickets "${EVENT_ID}" sold)"
+test "${AVAILABLE_RESERVED}" = "3"
+test "${RESERVED_RESERVED}" = "3"
+test "${SOLD_RESERVED}" = "0"
 
 echo "7. Authorize hosted checkout directly on Payment"
 curl -fsS "${curl_resolve[@]}" -X POST "http://payment-auth.flashsale/api/v1/auth/register" \
@@ -105,6 +128,13 @@ PAYMENT_TOKEN="$(printf "%s" "$PAYMENT_LOGIN_JSON" | json_get access_token)"
 test -n "$PAYMENT_TOKEN"
 curl -fsS "${curl_resolve[@]}" -X POST "${PAYMENT_BASE}/api/v1/checkout/${SESSION_ID}/authorize" \
   -H "Authorization: Bearer ${PAYMENT_TOKEN}" | python3 -m json.tool
+curl -fsS -L "${curl_resolve[@]}" "${BASE}/api/checkout/success?session_id=${SESSION_ID}" >/dev/null
+AVAILABLE_SOLD="$(count_event_tickets "${EVENT_ID}" available)"
+RESERVED_SOLD="$(count_event_tickets "${EVENT_ID}" reserved)"
+SOLD_SOLD="$(count_event_tickets "${EVENT_ID}" sold)"
+test "${AVAILABLE_SOLD}" = "3"
+test "${RESERVED_SOLD}" = "0"
+test "${SOLD_SOLD}" = "3"
 
 echo "8. Composer metrics and Prometheus/Grafana KPI checks"
 curl -fsS "${curl_resolve[@]}" "${BASE}/metrics" >/tmp/egs-metrics.prom

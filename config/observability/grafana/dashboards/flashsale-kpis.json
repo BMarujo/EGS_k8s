@@ -595,126 +595,6 @@
       },
       "fieldConfig": {
         "defaults": {
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 8,
-        "y": 11
-      },
-      "id": 11,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "flashsale_auth_users_active",
-          "instant": false,
-          "legendFormat": "active",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Auth Active Users",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 11
-      },
-      "id": 12,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "flashsale_auth_users_inactive",
-          "instant": false,
-          "legendFormat": "inactive",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Auth Inactive Users",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
           "decimals": 2,
           "unit": "currencyEUR"
         },
@@ -723,8 +603,8 @@
       "gridPos": {
         "h": 7,
         "w": 8,
-        "x": 0,
-        "y": 18
+        "x": 8,
+        "y": 11
       },
       "id": 13,
       "options": {
@@ -773,8 +653,8 @@
       "gridPos": {
         "h": 7,
         "w": 8,
-        "x": 8,
-        "y": 18
+        "x": 16,
+        "y": 11
       },
       "id": 14,
       "options": {
@@ -827,8 +707,8 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 8,
-        "x": 16,
+        "w": 16,
+        "x": 0,
         "y": 18
       },
       "id": 15,
@@ -911,130 +791,9 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 0,
-        "y": 25
-      },
-      "id": 16,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "100 * flashsale_auth_users_active / clamp_min(flashsale_auth_users_total, 1)",
-          "instant": false,
-          "legendFormat": "active_rate",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Auth Active Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 25
-      },
-      "id": 17,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "delta(flashsale_auth_users_total[$__range])",
-          "instant": false,
-          "legendFormat": "net_change",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Auth Net User Change",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 1,
-          "unit": "percent",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 12,
-        "y": 25
+        "w": 4,
+        "x": 16,
+        "y": 18
       },
       "id": 18,
       "options": {
@@ -1060,7 +819,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 * sum(payment_service_payment_transactions_total{status=\"succeeded\"}) / clamp_min(sum(payment_service_payment_transactions_total{status=~\"succeeded|failed|canceled\"}), 1)",
+          "expr": "100 * sum(flashsale_payment_payments_by_status{status=\"succeeded\"}) / clamp_min(sum(flashsale_payment_payments_total), 1)",
           "instant": false,
           "legendFormat": "success_rate",
           "range": true,
@@ -1068,7 +827,8 @@
         }
       ],
       "title": "Payment Success Rate",
-      "type": "stat"
+      "type": "stat",
+      "description": "Succeeded payments divided by total payments, using Composer-aggregated Payment KPI metrics."
     },
     {
       "datasource": {
@@ -1093,9 +853,9 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 18,
-        "y": 25
+        "w": 4,
+        "x": 20,
+        "y": 18
       },
       "id": 19,
       "options": {
@@ -1121,7 +881,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "100 * sum(payment_service_checkout_sessions_total{status=\"complete\"}) / clamp_min(sum(payment_service_checkout_sessions_total{status=\"created\"}), 1)",
+          "expr": "100 * sum(flashsale_payment_checkout_sessions_by_status{status=\"complete\"}) / clamp_min(sum(flashsale_payment_checkout_sessions_total), 1)",
           "instant": false,
           "legendFormat": "conversion_rate",
           "range": true,
@@ -1129,7 +889,8 @@
         }
       ],
       "title": "Checkout Conversion Rate",
-      "type": "stat"
+      "type": "stat",
+      "description": "Completed checkout sessions divided by total checkout sessions, using Composer-aggregated Payment KPI metrics."
     }
   ],
   "refresh": "5s",
