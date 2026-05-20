@@ -790,7 +790,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 7,
         "w": 4,
         "x": 16,
         "y": 18
@@ -852,7 +852,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 4,
+        "h": 7,
         "w": 4,
         "x": 20,
         "y": 18
@@ -897,15 +897,10 @@
         "type": "prometheus",
         "uid": "prometheus"
       },
+      "description": "Percentage of Composer downstream calls served by each Auth pod during the selected dashboard time range.",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
+          "decimals": 1,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -915,28 +910,44 @@
                 "value": null
               }
             ]
-          }
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 7,
         "w": 8,
-        "x": 16,
-        "y": 22
+        "x": 0,
+        "y": 25
       },
       "id": 20,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
         },
-        "showHeader": true
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
       },
       "pluginVersion": "11.4.0",
       "targets": [
@@ -946,36 +957,363 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum by (service, upstream_pod) (flashsale_composer_upstream_api_calls_total{upstream_pod!=\"unknown\"})",
-          "format": "table",
+          "expr": "(100 * sort_desc(sum by (upstream_pod) (increase(flashsale_composer_upstream_api_calls_total{service=\"Auth Service\",upstream_pod!=\"unknown\"}[$__range]))) / scalar(clamp_min(sum(increase(flashsale_composer_upstream_api_calls_total{service=\"Auth Service\",upstream_pod!=\"unknown\"}[$__range])), 1))) > 0",
           "instant": true,
-          "legendFormat": "{{service}} {{upstream_pod}}",
+          "legendFormat": "{{upstream_pod}}",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Downstream Calls By Replica",
-      "transformations": [
+      "title": "Auth Replica Share",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Percentage of Composer downstream calls served by each Inventory pod during the selected dashboard time range.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 25
+      },
+      "id": 21,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
         {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true
-            },
-            "indexByName": {
-              "Value": 2,
-              "service": 0,
-              "upstream_pod": 1
-            },
-            "renameByName": {
-              "Value": "Calls",
-              "service": "service",
-              "upstream_pod": "pod"
-            }
-          }
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(100 * sort_desc(sum by (upstream_pod) (increase(flashsale_composer_upstream_api_calls_total{service=\"Inventory Service\",upstream_pod!=\"unknown\"}[$__range]))) / scalar(clamp_min(sum(increase(flashsale_composer_upstream_api_calls_total{service=\"Inventory Service\",upstream_pod!=\"unknown\"}[$__range])), 1))) > 0",
+          "instant": true,
+          "legendFormat": "{{upstream_pod}}",
+          "range": false,
+          "refId": "A"
         }
       ],
-      "type": "table"
+      "title": "Inventory Replica Share",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Percentage of Composer downstream calls served by each Payment pod during the selected dashboard time range.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 1,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 25
+      },
+      "id": 22,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value",
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(100 * sort_desc(sum by (upstream_pod) (increase(flashsale_composer_upstream_api_calls_total{service=\"Payment Service\",upstream_pod!=\"unknown\"}[$__range]))) / scalar(clamp_min(sum(increase(flashsale_composer_upstream_api_calls_total{service=\"Payment Service\",upstream_pod!=\"unknown\"}[$__range])), 1))) > 0",
+          "instant": true,
+          "legendFormat": "{{upstream_pod}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Payment Replica Share",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Number of Composer downstream calls served by each Auth pod during the selected dashboard time range.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 32
+      },
+      "id": 23,
+      "options": {
+        "displayMode": "gradient",
+        "maxVizHeight": 300,
+        "minVizHeight": 18,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(sort_desc(sum by (upstream_pod) (increase(flashsale_composer_upstream_api_calls_total{service=\"Auth Service\",upstream_pod!=\"unknown\"}[$__range])))) > 0",
+          "instant": true,
+          "legendFormat": "{{upstream_pod}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Auth Calls By Replica",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Number of Composer downstream calls served by each Inventory pod during the selected dashboard time range.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 32
+      },
+      "id": 24,
+      "options": {
+        "displayMode": "gradient",
+        "maxVizHeight": 300,
+        "minVizHeight": 18,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(sort_desc(sum by (upstream_pod) (increase(flashsale_composer_upstream_api_calls_total{service=\"Inventory Service\",upstream_pod!=\"unknown\"}[$__range])))) > 0",
+          "instant": true,
+          "legendFormat": "{{upstream_pod}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Inventory Calls By Replica",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Number of Composer downstream calls served by each Payment pod during the selected dashboard time range.",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 32
+      },
+      "id": 25,
+      "options": {
+        "displayMode": "gradient",
+        "maxVizHeight": 300,
+        "minVizHeight": 18,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": false,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "(sort_desc(sum by (upstream_pod) (increase(flashsale_composer_upstream_api_calls_total{service=\"Payment Service\",upstream_pod!=\"unknown\"}[$__range])))) > 0",
+          "instant": true,
+          "legendFormat": "{{upstream_pod}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Payment Calls By Replica",
+      "type": "bargauge"
     }
   ],
   "refresh": "5s",
@@ -999,6 +1337,6 @@
   "timezone": "browser",
   "title": "FlashSale Platform KPIs",
   "uid": "flashsale-platform-kpis",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
