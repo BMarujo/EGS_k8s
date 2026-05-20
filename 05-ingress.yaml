@@ -1,20 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: egs-hosts
+  name: egs-composer
 spec:
   ingressClassName: traefik
   rules:
-    - host: composer.flashsale
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: composer
-                port:
-                  number: 8000
     - host: grupo2-egs.deti.ua.pt
       http:
         paths:
@@ -25,104 +15,158 @@ spec:
                 name: composer
                 port:
                   number: 8000
-    - host: auth.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-auth
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /templates
+          - path: /auth/templates
             pathType: Prefix
             backend:
               service:
                 name: auth-frontend
                 port:
                   number: 80
-          - path: /static
+          - path: /auth/static
             pathType: Prefix
             backend:
               service:
                 name: auth-frontend
                 port:
                   number: 80
-          - path: /
+          - path: /auth
             pathType: Prefix
             backend:
               service:
                 name: auth-service
                 port:
                   number: 8000
-    - host: payment-auth.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-payment-auth
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
+          - path: /payment-auth
             pathType: Prefix
             backend:
               service:
                 name: payment-auth-service
                 port:
                   number: 8000
-    - host: inventory.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-inventory
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
+          - path: /inventory
             pathType: Prefix
             backend:
               service:
                 name: inventory-service
                 port:
                   number: 8000
-    - host: payment.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-payment
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
+          - path: /payment
             pathType: Prefix
             backend:
               service:
                 name: payment-service
                 port:
                   number: 8000
-    - host: grafana.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-grafana
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
+          - path: /grafana
             pathType: Prefix
             backend:
               service:
                 name: grafana
                 port:
                   number: 3000
-    - host: jaeger.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-jaeger
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
+          - path: /jaeger
             pathType: Prefix
             backend:
               service:
                 name: jaeger
                 port:
                   number: 16686
-    - host: prometheus.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-prometheus
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
+          - path: /prometheus
             pathType: Prefix
             backend:
               service:
                 name: prometheus
                 port:
                   number: 9090
-    - host: vault.flashsale
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: egs-mail
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: grupo2-egs.deti.ua.pt
       http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: vault
-                port:
-                  number: 8200
-    - host: mail.flashsale
-      http:
-        paths:
-          - path: /
+          - path: /mail
             pathType: Prefix
             backend:
               service:

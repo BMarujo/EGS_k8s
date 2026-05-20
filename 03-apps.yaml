@@ -119,6 +119,10 @@ spec:
                 configMapKeyRef:
                   name: egs-config
                   key: OTEL_METRIC_EXPORT_INTERVAL_MS
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           startupProbe:
             httpGet:
               path: /health
@@ -161,7 +165,7 @@ kind: Deployment
 metadata:
   name: auth-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: auth-service
@@ -322,6 +326,10 @@ spec:
                 configMapKeyRef:
                   name: egs-config
                   key: OTEL_METRIC_EXPORT_INTERVAL_MS
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           startupProbe:
             httpGet:
               path: /health
@@ -364,7 +372,7 @@ kind: Deployment
 metadata:
   name: auth-frontend
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: auth-frontend
@@ -402,8 +410,14 @@ spec:
             - name: auth-templates
               mountPath: /usr/share/nginx/html/templates
               readOnly: true
+            - name: auth-templates
+              mountPath: /usr/share/nginx/html/auth/templates
+              readOnly: true
             - name: auth-css
               mountPath: /usr/share/nginx/html/static/css
+              readOnly: true
+            - name: auth-css
+              mountPath: /usr/share/nginx/html/auth/static/css
               readOnly: true
       volumes:
         - name: auth-templates
@@ -430,7 +444,7 @@ kind: Deployment
 metadata:
   name: payment-auth-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: payment-auth-service
@@ -591,6 +605,10 @@ spec:
                 configMapKeyRef:
                   name: egs-config
                   key: OTEL_METRIC_EXPORT_INTERVAL_MS
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           startupProbe:
             httpGet:
               path: /health
@@ -633,7 +651,7 @@ kind: Deployment
 metadata:
   name: inventory-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: inventory-service
@@ -714,6 +732,10 @@ spec:
                 configMapKeyRef:
                   name: egs-config
                   key: OTEL_METRIC_EXPORT_INTERVAL_MS
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           startupProbe:
             httpGet:
               path: /health
@@ -756,7 +778,7 @@ kind: Deployment
 metadata:
   name: payment-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: payment-service
@@ -867,6 +889,10 @@ spec:
                 configMapKeyRef:
                   name: egs-config
                   key: OTEL_METRIC_EXPORT_INTERVAL_MS
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           startupProbe:
             httpGet:
               path: /health

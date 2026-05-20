@@ -2,19 +2,11 @@
 set -euo pipefail
 
 EDGE_IP="${1:-193.136.82.35}"
-BASE="http://composer.flashsale"
-PAYMENT_BASE="http://payment.flashsale"
+BASE="http://grupo2-egs.deti.ua.pt"
+PAYMENT_BASE="${BASE}/payment"
 
 curl_resolve=(
-  --resolve "composer.flashsale:80:${EDGE_IP}"
-  --resolve "auth.flashsale:80:${EDGE_IP}"
-  --resolve "payment-auth.flashsale:80:${EDGE_IP}"
-  --resolve "inventory.flashsale:80:${EDGE_IP}"
-  --resolve "payment.flashsale:80:${EDGE_IP}"
-  --resolve "grafana.flashsale:80:${EDGE_IP}"
-  --resolve "jaeger.flashsale:80:${EDGE_IP}"
-  --resolve "prometheus.flashsale:80:${EDGE_IP}"
-  --resolve "mail.flashsale:80:${EDGE_IP}"
+  --resolve "grupo2-egs.deti.ua.pt:80:${EDGE_IP}"
 )
 
 json_get() {
@@ -62,7 +54,7 @@ curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/api/auth/forgot-password" \
   -H "Content-Type: application/json" \
   -d "{\"email\":\"${EMAIL}\"}" | python3 -m json.tool
 sleep 2
-curl -fsS "${curl_resolve[@]}" "http://mail.flashsale/api/v2/messages?limit=50" >/tmp/egs-mailhog.json
+curl -fsS "${curl_resolve[@]}" "${BASE}/mail/api/v2/messages?limit=50" >/tmp/egs-mailhog.json
 python3 - "$EMAIL" <<'PY'
 import json, sys
 email = sys.argv[1].lower()
@@ -118,10 +110,10 @@ test "${RESERVED_RESERVED}" = "3"
 test "${SOLD_RESERVED}" = "0"
 
 echo "7. Authorize hosted checkout directly on Payment"
-curl -fsS "${curl_resolve[@]}" -X POST "http://payment-auth.flashsale/api/v1/auth/register" \
+curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/payment-auth/api/v1/auth/register" \
   -H "Content-Type: application/json" \
   -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"full_name\":\"K8s Smoke\"}" >/dev/null || true
-PAYMENT_LOGIN_JSON="$(curl -fsS "${curl_resolve[@]}" -X POST "http://payment-auth.flashsale/api/v1/auth/login" \
+PAYMENT_LOGIN_JSON="$(curl -fsS "${curl_resolve[@]}" -X POST "${BASE}/payment-auth/api/v1/auth/login" \
   -H "Content-Type: application/json" \
   -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\"}")"
 PAYMENT_TOKEN="$(printf "%s" "$PAYMENT_LOGIN_JSON" | json_get access_token)"
@@ -143,7 +135,7 @@ grep -q "flashsale_inventory_tickets_total" /tmp/egs-metrics.prom
 grep -q "flashsale_payment_payments_total" /tmp/egs-metrics.prom
 grep -q "flashsale_composer_api_calls_total" /tmp/egs-metrics.prom
 sleep 8
-curl -fsS "${curl_resolve[@]}" --get "http://prometheus.flashsale/api/v1/query" \
+curl -fsS "${curl_resolve[@]}" --get "${BASE}/prometheus/api/v1/query" \
   --data-urlencode 'query=sum by (service, method, path, status_class) (flashsale_composer_api_calls_total)' >/tmp/egs-prometheus-query.json
 python3 - <<'PY'
 import json
@@ -153,7 +145,7 @@ assert data.get("data", {}).get("result"), data
 print("prometheus_samples:", len(data["data"]["result"]))
 PY
 curl -fsS -u admin:admin "${curl_resolve[@]}" \
-  "http://grafana.flashsale/api/dashboards/uid/flashsale-platform-kpis" >/tmp/egs-grafana-dashboard.json
+  "${BASE}/grafana/api/dashboards/uid/flashsale-platform-kpis" >/tmp/egs-grafana-dashboard.json
 python3 - <<'PY'
 import json
 data = json.load(open("/tmp/egs-grafana-dashboard.json"))
@@ -163,9 +155,9 @@ print("grafana_dashboard:", title)
 PY
 
 echo "9. Grafana, Jaeger, and MailHog ingress checks"
-curl -fsS -I "${curl_resolve[@]}" "http://grafana.flashsale/login" | head -n 1
-curl -fsS -I "${curl_resolve[@]}" "http://jaeger.flashsale/" | head -n 1
-curl -fsS "${curl_resolve[@]}" "http://mail.flashsale/api/v2/messages?limit=1" >/dev/null
+curl -fsS -I "${curl_resolve[@]}" "${BASE}/grafana/login" | head -n 1
+curl -fsS -I "${curl_resolve[@]}" "${BASE}/jaeger/" | head -n 1
+curl -fsS "${curl_resolve[@]}" "${BASE}/mail/api/v2/messages?limit=1" >/dev/null
 echo "HTTP/1.1 200 OK (MailHog API)"
 
 echo "Smoke test passed"

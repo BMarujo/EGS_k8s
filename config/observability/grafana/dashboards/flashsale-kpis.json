@@ -891,6 +891,91 @@
       "title": "Checkout Conversion Rate",
       "type": "stat",
       "description": "Completed checkout sessions divided by total checkout sessions, using Composer-aggregated Payment KPI metrics."
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 22
+      },
+      "id": 20,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum by (service, upstream_pod) (flashsale_composer_upstream_api_calls_total{upstream_pod!=\"unknown\"})",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "{{service}} {{upstream_pod}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Downstream Calls By Replica",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value": 2,
+              "service": 0,
+              "upstream_pod": 1
+            },
+            "renameByName": {
+              "Value": "Calls",
+              "service": "service",
+              "upstream_pod": "pod"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
   "refresh": "5s",

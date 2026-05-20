@@ -34,7 +34,7 @@
     </section>
   </main>
   <script>
-    const API_URL = "http://auth.flashsale/api/v1";
+    const API_URL = `${window.location.origin}/auth/api/v1`;
     const urlParams = new URLSearchParams(window.location.search);
     const handoffUrl = urlParams.get("handoff_url");
     const returnTo = urlParams.get("return_to");

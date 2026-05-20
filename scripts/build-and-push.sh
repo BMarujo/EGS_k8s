@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TAG="${1:-k8s-20260510182212}"
+TAG="${1:-$(date +k8s-%Y%m%d%H%M%S)}"
 REGISTRY_PREFIX="${REGISTRY_PREFIX:-bmarujo}"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"

@@ -105,6 +105,8 @@ spec:
           env:
             - name: COLLECTOR_OTLP_ENABLED
               value: "true"
+            - name: QUERY_BASE_PATH
+              value: /jaeger
           ports:
             - name: ui
               containerPort: 16686
@@ -157,6 +159,7 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: default
       securityContext:
         fsGroup: 65534
       containers:
@@ -167,18 +170,20 @@ spec:
             - --config.file=/etc/prometheus/prometheus.yml
             - --storage.tsdb.path=/prometheus
             - --web.enable-lifecycle
+            - --web.external-url=http://grupo2-egs.deti.ua.pt/prometheus
+            - --web.route-prefix=/prometheus
           ports:
             - name: http
               containerPort: 9090
           readinessProbe:
             httpGet:
-              path: /-/ready
+              path: /prometheus/-/ready
               port: http
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /-/healthy
+              path: /prometheus/-/healthy
               port: http
             initialDelaySeconds: 20
             periodSeconds: 20
@@ -256,6 +261,10 @@ spec:
                   key: GRAFANA_ADMIN_PASSWORD
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
+            - name: GF_SERVER_ROOT_URL
+              value: http://grupo2-egs.deti.ua.pt/grafana
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
           ports:
             - name: http
               containerPort: 3000
@@ -343,6 +352,8 @@ spec:
         - name: mailhog
           image: mailhog/mailhog:v1.0.1
           imagePullPolicy: IfNotPresent
+          args:
+            - -ui-web-path=mail
           ports:
             - name: smtp
               containerPort: 1025
@@ -350,13 +361,13 @@ spec:
               containerPort: 8025
           readinessProbe:
             httpGet:
-              path: /
+              path: /mail
               port: http
             initialDelaySeconds: 3
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /
+              path: /mail
               port: http
             initialDelaySeconds: 10
             periodSeconds: 20

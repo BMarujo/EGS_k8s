@@ -5,16 +5,6 @@ EDGE_IP="${1:-193.136.82.35}"
 MARKER="# egs-k8s"
 HOSTS=(
   grupo2-egs.deti.ua.pt
-  composer.flashsale
-  auth.flashsale
-  payment-auth.flashsale
-  inventory.flashsale
-  payment.flashsale
-  grafana.flashsale
-  jaeger.flashsale
-  prometheus.flashsale
-  vault.flashsale
-  mail.flashsale
 )
 
 tmp_file="$(mktemp)"
