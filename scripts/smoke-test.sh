@@ -4,6 +4,8 @@ set -euo pipefail
 EDGE_IP="${1:-193.136.82.35}"
 BASE="http://grupo2-egs.deti.ua.pt"
 PAYMENT_BASE="${BASE}/payment"
+TOKEN=""
+EVENT_ID=""
 
 curl_resolve=(
   --resolve "grupo2-egs.deti.ua.pt:80:${EDGE_IP}"
@@ -13,6 +15,14 @@ json_get() {
   local key="$1"
   python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('$key',''))" 2>/dev/null
 }
+
+cleanup_smoke_event() {
+  if [[ -n "${EVENT_ID}" && -n "${TOKEN}" ]]; then
+    curl -fsS "${curl_resolve[@]}" -X DELETE "${BASE}/api/events/${EVENT_ID}" \
+      -H "Authorization: Bearer ${TOKEN}" >/dev/null || true
+  fi
+}
+trap cleanup_smoke_event EXIT
 
 count_event_tickets() {
   local event_id="$1"
