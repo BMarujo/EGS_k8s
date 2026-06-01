@@ -20,7 +20,7 @@ images:
     newTag: k8s-20260531023213
   - name: egs-inventory-service
     newName: bmarujo/egs-inventory-service
-    newTag: k8s-20260531023213
+    newTag: k8s-20260601150240
   - name: egs-payment-service
     newName: bmarujo/egs-payment-service
     newTag: k8s-20260531023213

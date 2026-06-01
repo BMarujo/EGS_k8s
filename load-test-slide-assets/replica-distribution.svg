@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520" role="img" aria-labelledby="title desc">
+  <title id="title">Replica traffic distribution from recommended load test</title>
+  <desc id="desc">Horizontal stacked bars showing Auth, Inventory, and Payment traffic distributed across two replicas.</desc>
+  <rect width="1100" height="520" fill="#0b0b0a"/>
+  <text x="48" y="58" fill="#fff7e8" font-family="Arial, sans-serif" font-size="30" font-weight="700">Kubernetes Service Load Balancing</text>
+  <text x="48" y="90" fill="#cbbfa9" font-family="Arial, sans-serif" font-size="17">Replica share for backend calls that reached pods</text>
+
+  <rect x="48" y="120" width="18" height="18" fill="#4f8ef7"/>
+  <text x="74" y="135" fill="#fff7e8" font-family="Arial, sans-serif" font-size="15">Replica A</text>
+  <rect x="180" y="120" width="18" height="18" fill="#2dd4bf"/>
+  <text x="206" y="135" fill="#fff7e8" font-family="Arial, sans-serif" font-size="15">Replica B</text>
+
+  <!-- Auth 52.53 / 47.47 -->
+  <text x="48" y="200" fill="#fff7e8" font-family="Arial, sans-serif" font-size="20" font-weight="700">Auth</text>
+  <rect x="180" y="170" width="780" height="52" rx="6" fill="#1f2937"/>
+  <rect x="180" y="170" width="409.7" height="52" rx="6" fill="#4f8ef7"/>
+  <rect x="589.7" y="170" width="370.3" height="52" rx="6" fill="#2dd4bf"/>
+  <text x="382" y="202" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">52.5%</text>
+  <text x="775" y="202" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">47.5%</text>
+  <text x="985" y="202" fill="#cbbfa9" font-family="Arial, sans-serif" font-size="15">99 calls</text>
+
+  <!-- Inventory 50.43 / 49.57 -->
+  <text x="48" y="300" fill="#fff7e8" font-family="Arial, sans-serif" font-size="20" font-weight="700">Inventory</text>
+  <rect x="180" y="270" width="780" height="52" rx="6" fill="#1f2937"/>
+  <rect x="180" y="270" width="393.4" height="52" rx="6" fill="#4f8ef7"/>
+  <rect x="573.4" y="270" width="386.6" height="52" rx="6" fill="#2dd4bf"/>
+  <text x="377" y="302" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">50.4%</text>
+  <text x="766" y="302" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">49.6%</text>
+  <text x="985" y="302" fill="#cbbfa9" font-family="Arial, sans-serif" font-size="15">345 calls</text>
+
+  <!-- Payment attributed pod calls only: 45 / 40 = 52.94 / 47.06 -->
+  <text x="48" y="400" fill="#fff7e8" font-family="Arial, sans-serif" font-size="20" font-weight="700">Payment</text>
+  <rect x="180" y="370" width="780" height="52" rx="6" fill="#1f2937"/>
+  <rect x="180" y="370" width="412.9" height="52" rx="6" fill="#4f8ef7"/>
+  <rect x="592.9" y="370" width="367.1" height="52" rx="6" fill="#2dd4bf"/>
+  <text x="386" y="402" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">52.9%</text>
+  <text x="778" y="402" fill="#ffffff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">47.1%</text>
+  <text x="985" y="402" fill="#cbbfa9" font-family="Arial, sans-serif" font-size="15">85 attributed calls</text>
+
+  <text x="48" y="460" fill="#cbbfa9" font-family="Arial, sans-serif" font-size="16">Conclusion: services with two replicas received near-even traffic. Inventory shows almost perfect 50/50 distribution.</text>
+  <text x="48" y="488" fill="#786f60" font-family="Arial, sans-serif" font-size="14">Note: Payment had 17 rate-limited responses before pod attribution, excluded from the replica split above.</text>
+</svg>
